@@ -4,7 +4,7 @@
 
 
 
-## Funcionals
+## Functionals
 ## take other functions as argument
 randomise <- function(f) f(runif(1e3))
 hist(runif(1e6))
@@ -203,6 +203,7 @@ sum_w_counter(calls = TRUE)
 ## https://adv-r.hadley.nz/metaprogramming.html
 
 ## metaprogramming is inspecting and modifying expressions of the abstract syntax tree
+## @daniehei: it's not code, it's the idea of code...
 
 
 ## Big picture
@@ -250,7 +251,7 @@ rlang::call2("f", 1, 2, 3) ==
 rlang::expr(f(1, 2, 3))
 rlang::call2("+", 1, rlang::call2("*", 2, 3))
 
-## !!x inserts the code tree in x into the expression
+## !!x inserts the code tree in x into the expression, i.e. inserts expression into other expression
 ## building complex trees with help of simpler trees
 xx <- expr(x + x)
 yy <- expr(y + y)
@@ -272,7 +273,7 @@ string_math <- function(x)
 {
   e <- env(
     rlang::caller_env(),
-    `+` = function(x, y) paste0(x, y),
+    `+` = function(x, y) paste0(x, y),  ## originally +
     `*` = function(x, y) strrep(x, y)
   )
 
@@ -280,7 +281,7 @@ string_math <- function(x)
 }
 
 name <- "Daniel"
-string_math("Hello " + name)
+string_math("Hello " @ name)  ## wow! -> could be used for likelihood(...) and inside likelihood call stuff like random_coef(...)
 string_math(("x" * 2 + "-y") * 3)
 
 
@@ -306,7 +307,8 @@ with2(df, x + y)
 
 ## quosures
 ## quosures bundle and expression with an environment
-## -> use enquo instead of enexpr (whenever you use data masking)
+## -> use enquo instead of enexpr (whenever you use data masking, i.e. when you refer
+## to vars in a dataframe but treat vars as individual objects - not df$var)
 
 
 
@@ -317,7 +319,8 @@ with2(df, x + y)
 ## Expressions
 ## separating the description of the action from the action itself
 ## focus of the chapter: understand the data structures that underlie expressions
-## constants, symbols and calls are collectively known as expressions
+## mastering this knowledge will allow you to inspect and modify captured code, and to generate code with code
+## constants, symbols and calls (which are data structures) are collectively known as expressions (@daniehei i.e. data structures that underly the AST)
 y <- x * 10
 #> Error: object 'x' not found
 
