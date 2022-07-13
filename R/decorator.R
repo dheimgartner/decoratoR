@@ -37,8 +37,8 @@ foo()
 ## what @ should do:
 ## take the function decorator, execute next function definition,
 ## do function <- decorator(function)
-@decorator
-foo <- function(p = "hello from foo")
-{
-  cat(p, "\n")
-}
+#' @decorator
+#' foo <- function(p = "hello from foo")
+#' {
+#'   cat(p, "\n")
+#' }

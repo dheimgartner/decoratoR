@@ -472,8 +472,113 @@ rlang::is_missing(expr())
 
 
 ## Quasiquotation
+## https://adv-r.hadley.nz/quasiquotation.html
+## quasiquotation != quosures
+## quoting and unquoting!
+## where quotation is the act of capturing an unevaluated expression,
+## unquotiation is the ability to selectively evaluate parts of an otherwise
+## quoted expressioin. together this is called quasiquotation.
+## quasiquotation makes it easy to create functions that combine code written by
+## the function's author with code written by the function's user (language of LL!).
 
-## TODO: proceed here: https://adv-r.hadley.nz/quasiquotation.html
+## motivation
+ccement <- function(...)
+{
+  elems <- rlang::ensyms(...)
+  purrr::map(elems, rlang::as_string) %>%  ## as_string cast symbol to string
+    as.vector(mode = "character")
+}
+
+
+ccement(hello,
+        world,
+        how,
+        is,
+        it,
+        going)
+
+
+
+
+## !! called "unquote" (injection operator)
+
+
+x <- "hello"
+rlang::is_expression(x)
+
+
+## distinction between quoted and evaluated arguments is important:
+## an evaluated argument obeys R's usual evaluation rules
+## a quoted argument is captured by the function and is processed in some custom way!
+## -> non standard evaluation NSE
+
+## ccement quotes all its arguments -> symbols
+
+
+
+## quoting
+## capturing an expression without evaluating it
+## there are 4 important quoting functions:
+## 1. expr() captures its argument exactly as provided (without whitespace and comments)
+## however:
+f1 <- function(x) rlang::expr(x)
+f1(a + b + c)
+
+## 2. enexpr() captures what the caller supplied to the function by looking at the internal
+## promise object that powers lazy evaluation
+
+## 3. enexprs() capture all arguments in ...
+f <- function(...) rlang::enexprs(...)
+f(x = 1, y = 2, z = x * y)
+test <- f(x = 1, y = 2, z = x * y)
+rlang::is_expression(test$z)
+
+## 4. exprs() make a list of expressions
+## useful interactively...
+rlang::exprs(x = x ^ 2, y = y ^ 3, z ?? .)  ## can also capture stuff that does not make sense...
+
+
+
+## In short, use enexpr() and enexprs() to capture the expressions supplied as arguments by the user.
+## Use expr() and exprs() to capture expressions that you supply.
+
+
+
+## capturing symbols
+## if you want to allow the user to specify a variable name (symbol) and not
+## an arbitrary expression (although symbols are expressions...)
+x <- rlang::sym(x)
+rlang::ensym(x)
+rlang::ensyms()
+f <- function(...)
+{
+  rlang::ensyms(...)
+}
+
+
+
+## with base R
+## each rlang function described above has a base R equivalent
+## base equivalents do not support unquoting (discussed further below)
+## -> makes them quoting funcs rather than quasiquoting funcs
+
+## 1. expr() -> quote()
+## 2. enexpr() -> substitute()
+## 3. exprs() -> alist()
+## 4. enexprs() -> substitute() [not documented!]
+f <- function(...) as.list(substitute(...()))
+
+## further (but discussed later):
+## bquote() -> form of quasiquotation
+## ~ formula -> quoting function that also captures the environment
+
+
+
+
+## substitution
+## proceed: https://adv-r.hadley.nz/quasiquotation.html
+
+
 
 
 

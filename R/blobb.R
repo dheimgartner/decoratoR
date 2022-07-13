@@ -128,11 +128,11 @@ decorator <- function(f)
 
 
 
-`_@_`decorator
-crazy_func <- function()
-{
-  cat("crazy\n")
-}
-
-crazy_func()
+# `_@_`decorator
+# crazy_func <- function()
+# {
+#   cat("crazy\n")
+# }
+#
+# crazy_func()
 
