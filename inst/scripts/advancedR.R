@@ -576,7 +576,109 @@ f <- function(...) as.list(substitute(...()))
 
 
 ## substitution
-## proceed: https://adv-r.hadley.nz/quasiquotation.html
+## substitute captures unevaluated expressions but does also substitution
+f <- function(x) substitute(x * 2)
+f(a + b + c)
+
+## if you want to use subsitute for substitution use the second argument (env)
+## for substitution
+substitute(x * y * z, list(x = 10, y = quote(a + b)))
+
+
+
+
+
+## unquoting
+## unquoting allows you to selectively evaluate parts of the expression
+## (allows you to merge ASTs using a template AST)
+## base R functions use other techniques to do stuff similar to unquoting
+
+## selectively evaluate code inside expr(): expr(!!x) is equivalent to x
+## later: eval(expr(x)) is also equivalent to x
+
+## @daniehei: read carefully ONLY inside expressions!
+y <- quote(variable)
+!!y
+## but
+expr(!!y)
+
+
+## unquoting one argument
+## !! unquotes a single argument in a function: it takes a single expression,
+## evaluates it and inlines the result in the AST (i.e. !! introduces a placeholder
+## in the AST...)
+x <- expr(-1)
+expr(f(!!x, y))
+
+## also works with symbols and constants
+a <- sym("y")
+b <- 1
+expr(f(!!a, !!b))
+
+## if RHS of !! is a function call - it will evaluate it and substitute the result
+
+
+
+
+## unquoting a function
+## only challenge expr(!!f(x, y)) unquotes the result of f(x, y) so you need an
+## extra pair of parentheses
+f <- expr(foo)
+expr((!!f)(x, y))
+## equivalent to
+call2(f, expr(x), expr(y))
+
+
+## unquoting missing arguments
+arg <- rlang::missing_arg()
+expr(foo(!!arg, !!arg))
+#> Error in enexpr(expr) : object 'arg' not found
+expr(foo(!!maybe_missing(arg)))
+
+
+
+
+## unquoting special form
+get_from_iris <- function(x)
+{
+  y <- enexpr(x)
+  z <- expr(`$`(iris, !!y))
+  eval(z)
+}
+
+
+## @daniehei not really related...
+filter_iris <- function(var, filt)
+{
+  var <- enexpr(var)
+  filt <- enexpr(filt)
+  filt <- rlang::as_string(filt)
+  z <<- expr(dplyr::filter(iris, !!var == filt))
+  eval(z)
+}
+
+filter_iris(Species, virginica)
+
+
+
+
+## unquoting many args
+## !!! takes a list of expressions and inserts them at the location of the !!!
+xs <- exprs(1, a, -b)
+ys <- set_names(xs, c("a", "b", "c"))
+expr(f(!!!ys, d = 4))
+
+
+
+
+## non-standard ASTs
+## proceed: https://adv-r.hadley.nz/quasiquotation.html#non-standard-ast
+
+
+
+
+
+
 
 
 
