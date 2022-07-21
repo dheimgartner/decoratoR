@@ -672,12 +672,65 @@ expr(f(!!!ys, d = 4))
 
 
 ## non-standard ASTs
-## proceed: https://adv-r.hadley.nz/quasiquotation.html#non-standard-ast
+## ASTs that contain components that are not expressions
 
 
 
 
 
+## non-quoting
+## one baseR funciton that implements quasiquotation: bquote()
+## uses .() for unquoting; however rarely used...
+xyz <- bquote((x + y + z))
+rlang::is_expression(xyz)
+bquote(-.(xyz) / 2)
+
+zyx <- rlang::expr(x + y + z)
+bquote(-.(zyx) / 2)
+
+## baseR uses non-quoting techniques, i.e. selectively turns off quoting rather
+## than using unquoting in order to allow indirect specification.
+
+## @daniehei The above terms are simply talking about interfaces where a name to be used is
+## captured from the source code the user typed, and thus does not need quote marks.
+
+
+## 4 basic forms of that concept:
+## 1. pair of quoting ($) and non-quoting ([[]]) functions
+`$`(mtcars, cyl)  ## second argument is quoted
+## three other quoting functions closely related to $: subset(), transform(), with()
+
+## 2. a pair of quoting and non-quoting arguments: e.g. rm(..., list) where ...
+## allows you to provide bare variable names or a character vector via the list argument
+
+## 3. an argument that controls whether a different argument is quoting or non-quoting
+## e.g. library()
+library(rlang)
+pkg <- "rlang"
+library(pkg)
+#> Error in library(pkg) : there is no package called ‘pkg’
+library(pkg, character.only = TRUE)
+
+## 4. quoting if evaluation fails
+help(var)
+var <- "mean"
+help(var)
+var <- 10
+help(var)
+
+## @daniehei if a function quotes an argument, that is, you can specify the arg as
+## source without quoting. unquoting = selectively evaluate code!
+
+
+## KEEP IN MIND: quoting and unquoting selectively capture the idea of code without
+## evaluating it, and actually selectively evaluate part of code
+
+
+
+
+## ... (dot-dot-dot)
+## proceed read again 19 Quasiquotation Outline
+## https://adv-r.hadley.nz/quasiquotation.html#non-standard-ast
 
 
 
