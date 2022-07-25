@@ -1,6 +1,9 @@
 ## Functional Programming
 ## https://adv-r.hadley.nz/fp.html
 
+## solutions:
+## https://advanced-r-solutions.rbind.io/index.html
+
 
 
 
@@ -248,7 +251,7 @@ lobstr::ast(1 + 2 * 3)
 ## code can generate code
 ## code to create new trees
 rlang::call2("f", 1, 2, 3) ==
-rlang::expr(f(1, 2, 3))
+  rlang::expr(f(1, 2, 3))
 rlang::call2("+", 1, rlang::call2("*", 2, 3))
 
 ## !!x inserts the code tree in x into the expression, i.e. inserts expression into other expression
@@ -711,6 +714,11 @@ library(pkg)
 #> Error in library(pkg) : there is no package called ‘pkg’
 library(pkg, character.only = TRUE)
 
+
+## @daniehei: library -> if the arg (pkgname) is not a character it is quoted
+## -> as.character(substitute(pkgname))
+
+
 ## 4. quoting if evaluation fails
 help(var)
 var <- "mean"
@@ -729,8 +737,98 @@ help(var)
 
 
 ## ... (dot-dot-dot)
-## proceed read again 19 Quasiquotation Outline
-## https://adv-r.hadley.nz/quasiquotation.html#non-standard-ast
+## read again 19 Quasiquotation Outline
+dfs <- list(
+  a = data.frame(x = 1, y = 2),
+  b = data.frame(x = 3, y = 4)
+)
+
+dplyr::bind_rows(!!!dfs)
+rbind(exprs(!!!dfs))  ## does not work (because rbind does not understand lists...)
+
+rbind2 <- function(...)
+{
+  ldfs <- rlang::list2(...)
+  rdf <- purrr::map_df(ldfs, rbind)
+  rdf
+}
+
+rbind2(!!!dfs)
+rbind2(dfs)
+
+rbind3 <- function(...)
+{
+  dots <- list(...)
+  rdf <- purrr::map_df(dots, rbind)
+  rdf
+}
+
+rbind3(dfs)
+
+## closely related to *args and **kwargs!
+
+var <- "x"
+val <- c(1, 2, 3)
+tibble::tibble(!!var := val)
+
+## we need := because R's grammar does not allow expressions as argument names...
+
+
+set_attr <- function(.x, ...)
+{
+  attr <- rlang::list2(...)
+  attributes(.x) <- attr
+  .x
+}
+
+attrs <- list(x = 1, y = 2)
+attr_name <- "z"
+
+1:10 %>%
+  set_attr(w = 0, !!!attrs, !!attr_name := 3) %>%
+  str()
+
+
+## compare with
+set_attr <- function(.x, ...)
+{
+  attr <- list(...)
+  attributes(.x) <- attr
+  .x
+}
+
+1:10 %>%
+  set_attr(w = 0) %>%   ## owrks
+  # set_attr(attrs)  ## Error... : attributes must be named!
+  set_attr(!!attr_name := 3) ## Error... (also without :=)
+
+?rlang::`dyn-dots`  ## -> injects names
+
+
+
+
+## use rlang::exec() if you want to use this technique with a function that does
+## not have tidy dots
+## directly
+exec("mean", x = 1:10, na.rm = TRUE)
+## indirectly
+args <- list(x = 1:10, na.rm = TRUE, trim = 0.1)
+exec("mean", !!!args)
+## mixed...
+
+
+
+## base R
+## do.call: first argument gives a function to call, second argument is a list
+## of arguments to be passed to the function
+do.call("rbind", dfs)
+## can also solve the second kind of problem (:=)
+var <- "x"
+val <- c(1, 2, 3)
+args <- list(val)
+names(args) <- var
+do.call("data.frame", args)
+
 
 
 
@@ -740,6 +838,7 @@ help(var)
 
 
 ## Evaluation
+## proceed: https://adv-r.hadley.nz/evaluation.html
 
 
 
