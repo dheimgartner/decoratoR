@@ -838,7 +838,35 @@ do.call("data.frame", args)
 
 
 ## Evaluation
+## eval() evaluates an expression in an environment
+## two big new ideas:
+## 1. quosure: data structure that captures an expression along with its environemnt (e.g. function args)
+## 2. data mask: evaluate an expression in the context of a data.frame
+
+## tidy evaluation: quasiquotation, quosures and data masks together
+eval(expr(print(x + 1)), env(x = 1000))
+
+
+## application: source()
+source2 <- function(path, env = caller_env())
+{
+  file <- paste(readLines(path, warn = FALSE), collapse = "\n")
+  exprs <- rlang::parse_exprs(file)
+
+  res <- NULL
+  for (i in seq_along(exprs))
+  {
+    res <- eval(exprs[[i]], env)
+  }
+
+  invisible(res)
+}
+
+
+
+## expression vectors
 ## proceed: https://adv-r.hadley.nz/evaluation.html
+
 
 
 
